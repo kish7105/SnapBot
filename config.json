@@ -1,0 +1,67 @@
+{
+    "bot": {
+        "prefix": ">",
+        "help_command": null,
+        "owner": 1006586485144813691
+    },
+    "database": {
+        "name": "MongoDB",
+        "driver": "motor",
+        "driver_type": "Asynchronous"
+    },
+    "host": {
+        "name": "BotHosting",
+        "url": "https://bot-hosting.net"
+    },
+    "server_settings": {
+        "channels": {
+            "log": 1202312059098759269,
+            "confession": 1224589225694072892
+        },
+        "roles": {}
+    },
+    "logging": {
+        "version": 1,
+        "disable_existing_loggers": false,
+        "filters": {
+            "eventsFilter": {
+                "()": "__main__.EventsFilter"
+            }
+        },
+        "formatters": {
+            "customFormatter": {
+                "format": "[ %(levelname)s ] [ %(asctime)s ] >> %(message)s [ %(filename)s (%(lineno)s) ]\n",
+                "datefmt": "%Y-%m-%d | %I:%M:%S %p"
+            }
+        },
+        "handlers": {
+            "eventHandler": {
+                "class": "logging.FileHandler",
+                "level": "INFO",
+                "formatter": "customFormatter",
+                "filename": "logs/events.log",
+                "mode": "a",
+                "filters": [
+                    "eventsFilter"
+                ]
+            },
+            "errorHandler": {
+                "class": "logging.FileHandler",
+                "level": "ERROR",
+                "formatter": "customFormatter",
+                "filename": "logs/errors.log",
+                "mode": "a"
+            }
+        },
+        "loggers": {
+            "snapbot": {
+                "level": "DEBUG",
+                "handlers": [
+                    "eventHandler",
+                    "errorHandler"
+                ],
+                "propagate": false
+            }
+        }
+    }
+}
