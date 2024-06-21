@@ -29,7 +29,7 @@
   <a href="#overview">Overview</a> •
   <a href="#features">Features</a> •
   <a href="#installation">Installation</a> •
-  <a href="#contributors">Contributors</a> •
+  <a href="#contributing">Contributing</a> •
   <a href="#special-thanks">Special Thanks</a> •
   <a href="#license">License</a>
 </p>
@@ -68,8 +68,17 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Contributors
+## Contributing
 
+We welcome contributions from the community to make SnapBot better! Here are some ways you can contribute:
+
+1. **Reporting Bugs**: If you find a bug, please open an issue on GitHub.
+
+2. **Requesting Features**: If you have an idea for a new feature, please let us know by opening an issue.
+
+3. **Submitting Pull Requests**: If you want to contribute code, fork the repository and submit a pull request with your changes.
+
+<br>
 <a href="https://github.com/kish7105/SnapBot/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=kish7105/SnapBot" />
 </a>
