@@ -37,7 +37,7 @@ class Events(Cog):
         user: Member = self.bot.get_user(data["user_id"])
         
         if type == "Welcome":
-            return f"Welcome back {user.mention}!\nYou went AFK at {timestamp_full_datetime}\n\n**Reason**: {reason}"
+            return f"Welcome back {user.mention}!\nYou went AFK on {timestamp_full_datetime}\n\n**Reason**: {reason}"
         
         else:
             return f"{user.display_name} went AFK {timestamp_relative_datetime}\n\n**Reason**: {reason}"
@@ -63,7 +63,7 @@ class Events(Cog):
                 logger.error(f"Couldn't reset the nickname of the user {message.author.id}")
                 
             finally:
-                await message.reply(self.generate_reply_message(data=afk_data))
+                await message.reply(self.generate_reply_message(data=afk_data, type="Welcome"))
                 
     async def check_for_afk_user_pings(self, message: Message) -> None:
         """A helper function which checks for afk user's pings in every message. If someone pings an user who is currently AFK, this function will inform them that the user is currently AFK.
@@ -81,16 +81,7 @@ class Events(Cog):
                 continue
             
             else:
-                await coll.delete_one({"user_id": user.id})
-                
-                try:
-                    await user.edit(nick=afk_data["nickname"])
-                
-                except discord.Forbidden:
-                    logger.error(f"Couldn't reset the nickname of the user {user.id}")
-                    
-                finally:
-                    await message.reply(self.generate_reply_message(data=afk_data))
+                await message.reply(self.generate_reply_message(data=afk_data, type="Inform"))
         
         
     @Cog.listener()
