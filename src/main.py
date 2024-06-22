@@ -89,7 +89,7 @@ async def main() -> None:
     """The main function responsible for starting the bot."""
 
     await find_and_load_commands()
-    await bot.start(os.getenv("TEST_TOKEN"))
+    await bot.start(os.getenv("BOT_TOKEN"))
 
 
 if __name__ == "__main__":
