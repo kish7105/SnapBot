@@ -7,6 +7,7 @@ from discord import Interaction, Embed, Member, Message, app_commands as app
 from discord.ext.commands import Cog, Bot
 
 from utils.db_handler import load_database_and_collection
+from utils.exc_manager import exception_manager
 
 logger = logging.getLogger("snapbot")
 coll = load_database_and_collection("afk_data")
@@ -15,6 +16,10 @@ coll = load_database_and_collection("afk_data")
 class Events(Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
+        
+    async def cog_app_command_error(self, interaction: Interaction, error: app.AppCommandError) -> None:
+        logger.error(error)
+        await exception_manager(interaction, error)
         
     def generate_reply_message(self, *, data: dict, type: Literal["Welcome", "Inform"]) -> str:
         """Generates a message for two situations. If the `type` is 'Welcome`, the message will be generated for the use case when the user comes back from being AFK and the bot needs to send a `welcome back response`. On the other hand, if the `type` is 'Inform', the message will generated for the use case when the someone pings an user who is AFK and the bot needs to `inform them` that the user is AFK.

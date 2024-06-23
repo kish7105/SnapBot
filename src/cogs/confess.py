@@ -8,6 +8,7 @@ from discord.ext.commands import GroupCog, Bot
 
 from utils.checks import is_valid_attachment_url, is_owner
 from utils.errors import NotValidURL, NotOwner
+from utils.exc_manager import exception_manager
 from utils.helpers import get_channel
 from utils.encryption import encrypt, decrypt
 
@@ -18,6 +19,10 @@ class Confession(GroupCog, group_name="confession"):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
         self.encrypted_user_id = None
+        
+    async def cog_app_command_error(self, interaction: Interaction, error: app.AppCommandError) -> None:
+        logger.error(error)
+        await exception_manager(interaction, error)
         
     def generate_embed(self, *, confession: str, attachment: Optional[str], type: Literal["Log", "Confession"]) -> Embed:
         """Generates a discord embed which can be used to display the info about the confession to the confessions channel anonymously or to the log channel where it shows the encrypted user Id of the user who made that confession.
@@ -109,31 +114,6 @@ class Confession(GroupCog, group_name="confession"):
         # Send the info to the log channel and send the decrypted message to the user
         await log_channel.send(f"{interaction.user.mention} accessed confession logs just now.")
         await interaction.followup.send(f"Encryption Successful!\n\n**User ID**: {decrypted_message}")
-        
-    
-    @post.error
-    async def post_error(self, interaction: Interaction, error: app.AppCommandError) -> None:
-        if isinstance(error, app.CommandOnCooldown):
-            await interaction.response.send_message(f"Woah.. calm down buddy! Retry after ``{error.retry_after: .2f} seconds``", ephemeral=True)
-            
-        elif isinstance(error, app.NoPrivateMessage):
-            await interaction.response.send_message("This command cannot be used in DMs!", ephemeral=True)
-            
-        elif isinstance(error, NotValidURL):
-            await interaction.response.send_message("The URL you provided is not valid! Make sure the image is sent on discord somewhere and the url for it starts with ``https://cdn.discordapp.com/``", ephemeral=True)
-            
-        else:
-            logger.exception(error)
-            await interaction.response.send_message("An unknown error occurred during the command execution! Please try again later.", ephemeral=True)
-            
-    @decrypt.error
-    async def decrypt_error(self, interaction: Interaction, error: app.AppCommandError) -> None:
-        if isinstance(error, NotOwner):
-            await interaction.response.send_message("Only the bot owner is allowed to use this command!", ephemeral=True)
-            
-        else:
-            logger.exception(error)
-            await interaction.response.send_message("An unknown error occurred during the command execution! Please try again later.", ephemeral=True)
         
 
 async def setup(bot: Bot) -> None:

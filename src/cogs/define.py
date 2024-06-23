@@ -8,12 +8,18 @@ from discord.ext.commands import Cog, Bot
 from reactionmenu import ViewMenu, ViewButton, ViewSelect
 import requests
 
+from utils.exc_manager import exception_manager
+
 logger = logging.getLogger("snapbot")
 
 
 class Define(Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
+        
+    async def cog_app_command_error(self, interaction: Interaction, error: app.AppCommandError) -> None:
+        logger.error(error)
+        await exception_manager(interaction, error)
 
     def generate_definition_embeds(
         self, interaction: Interaction, /, *, word: str, data_list: List[dict]
@@ -146,22 +152,6 @@ class Define(Cog):
         
         # Starting the view menu
         await view_menu.start()
-        
-    @define.error
-    async def define_error(self, interaction: Interaction, error: app.AppCommandError) -> None:
-        if isinstance(error, app.CommandOnCooldown):
-            await interaction.response.send_message(f"Woah.. calm down buddy! Retry after ``{error.retry_after: .2f} seconds``", ephemeral=True)
-            
-        elif isinstance(error, app.NoPrivateMessage):
-            await interaction.response.send_message("This command cannot be used in DMs!", ephemeral=True)
-            
-        elif isinstance(error, app.CommandInvokeError):
-            logger.exception(error)
-            await interaction.response.send_message("An error occurred during the invoking process. Please try again later.", ephemeral=True)
-            
-        else:
-            logger.exception(error)
-            await interaction.response.send_message("An unknown error occurred during the command execution! Please try again later.", ephemeral=True)
         
 
 async def setup(bot: Bot) -> None:

@@ -7,6 +7,7 @@ from discord import Interaction, Embed, Member, app_commands as app
 from discord.ext.commands import Cog, Bot
 
 from utils.db_handler import load_database_and_collection
+from utils.exc_manager import exception_manager
 
 logger = logging.getLogger("snapbot")
 coll = load_database_and_collection("afk_data")
@@ -15,6 +16,10 @@ coll = load_database_and_collection("afk_data")
 class AFK(Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
+        
+    async def cog_app_command_error(self, interaction: Interaction, error: app.AppCommandError) -> None:
+        logger.error(error)
+        await exception_manager(interaction, error)
         
     def generate_afk_embed(self, *, user: Member, reason: str) -> Embed:
         """Generates a discord embed which displays the details about the user going AFK in the server.
