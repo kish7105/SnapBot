@@ -9,6 +9,7 @@ from reactionmenu import ViewMenu, ViewButton, ViewSelect
 import requests
 
 from utils.exc_manager import exception_manager
+from utils.msg_format import format_as_error_msg
 
 logger = logging.getLogger("snapbot")
 
@@ -90,7 +91,7 @@ class Define(Cog):
 
         if response.status_code != 200:
             await interaction.response.send_message(
-                "Urban Dictionary API is down! Please try again later.", ephemeral=True
+                format_as_error_msg("Urban Dictionary API is down! Please try again later."), ephemeral=True
             )
             return
 
@@ -98,7 +99,7 @@ class Define(Cog):
 
         if not response_in_json["list"]:
             await interaction.response.send_message(
-                f"No definitions found for the word: **{word}**", ephemeral=True
+                format_as_error_msg(f"No definitions found for the word: **{word}**"), ephemeral=True
             )
             return
 

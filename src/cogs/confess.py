@@ -11,6 +11,7 @@ from utils.errors import NotValidURL, NotOwner
 from utils.exc_manager import exception_manager
 from utils.helpers import get_channel
 from utils.encryption import encrypt, decrypt
+from utils.msg_format import format_as_error_msg, format_as_success_msg
 
 logger = logging.getLogger("snapbot")
 
@@ -92,7 +93,7 @@ class Confession(GroupCog, group_name="confession"):
         await log_channel.send(embed=self.generate_embed(confession=confession, attachment=attachment, type="Log"))
         await confession_channel.send(embed=self.generate_embed(confession=confession, attachment=attachment, type="Confession"))
         
-        await interaction.followup.send(f"Your confession has been successfully posted in {confession_channel.mention}!")
+        await interaction.followup.send(format_as_success_msg(f"Your confession has been successfully posted in {confession_channel.mention}!"))
         
     @app.command(name="decrypt", description="Decrypts the confession using the encryption key")
     @app.describe(encrypted_key="Enter the encrypted key for decryption.")
@@ -103,7 +104,7 @@ class Confession(GroupCog, group_name="confession"):
         
         # If the decryption fails
         if decrypted_message is None:
-            await interaction.response.send_message("Invalid Encryption Key!", ephemeral=True)
+            await interaction.response.send_message(format_as_error_msg("Invalid Encryption Key!"), ephemeral=True)
             return
         
         await interaction.response.defer(ephemeral=True)
