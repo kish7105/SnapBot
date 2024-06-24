@@ -117,22 +117,24 @@ class About(GroupCog, group_name="about"):
             return
 
         await interaction.response.defer()
-        
+
         embed = self.generate_about_embed(data=about_data)
-        
+
         # Checking if the embed is not empty
         try:
             await interaction.followup.send(embed=embed)
-            
+
         except discord.HTTPException:
-            await interaction.followup.send(format_as_error_msg("Uh-oh! Your embed is empty. Please edit your embed first then try viewing it again."))
+            await interaction.followup.send(
+                format_as_error_msg(
+                    "Uh-oh! Your embed is empty. Please edit your embed first then try viewing it again."
+                )
+            )
 
     @app.command(name="edit_title", description="Edits the title of your about embed")
     @app.checks.cooldown(1, 10)
     @app.guild_only()
-    async def edit_title(
-        self, interaction: Interaction
-    ) -> None:
+    async def edit_title(self, interaction: Interaction) -> None:
         """A command which allows users to edit the title of their about embed
 
         Parameters
@@ -148,9 +150,7 @@ class About(GroupCog, group_name="about"):
     )
     @app.checks.cooldown(1, 10)
     @app.guild_only()
-    async def edit_description(
-        self, interaction: Interaction
-    ) -> None:
+    async def edit_description(self, interaction: Interaction) -> None:
         """A command which allows users to edit the description of their about embed
 
         Parameters
@@ -376,9 +376,7 @@ class About(GroupCog, group_name="about"):
     )
     @app.checks.cooldown(1, 10)
     @app.guild_only()
-    async def edit_author_text(
-        self, interaction: Interaction
-    ) -> None:
+    async def edit_author_text(self, interaction: Interaction) -> None:
         """A command which allows users to edit the author text of their about embed
 
         Parameters
@@ -394,9 +392,7 @@ class About(GroupCog, group_name="about"):
     )
     @app.checks.cooldown(1, 10)
     @app.guild_only()
-    async def edit_footer_text(
-        self, interaction: Interaction
-    ) -> None:
+    async def edit_footer_text(self, interaction: Interaction) -> None:
         """A command which allows users to edit the footer text of their about embed
 
         Parameters
