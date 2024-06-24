@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Literal, Optional
 
 import discord
 from discord import Interaction, Embed, Member, app_commands as app
@@ -9,9 +9,26 @@ from utils.checks import is_valid_attachment_url
 from utils.db_handler import load_database_and_collection
 from utils.exc_manager import exception_manager
 from utils.msg_format import format_as_error_msg, format_as_success_msg
+from utils.modals.author_text_modal import AuthorTextModal
+from utils.modals.description_modal import DescriptionModal
+from utils.modals.title_modal import TitleModal
+from utils.modals.footer_text_modal import FooterTextModal
 
 logger = logging.getLogger("snapbot")
 coll = load_database_and_collection("about_data")
+
+Category = Literal[
+    "Title",
+    "Description",
+    "Color",
+    "Image",
+    "Thumbnail",
+    "Author Text",
+    "Author Icon",
+    "Author URL",
+    "Footer Text",
+    "Footer Icon",
+]
 
 
 class About(GroupCog, group_name="about"):
@@ -100,16 +117,21 @@ class About(GroupCog, group_name="about"):
             return
 
         await interaction.response.defer()
-
+        
         embed = self.generate_about_embed(data=about_data)
-        await interaction.followup.send(embed=embed)
+        
+        # Checking if the embed is not empty
+        try:
+            await interaction.followup.send(embed=embed)
+            
+        except discord.HTTPException:
+            await interaction.followup.send(format_as_error_msg("Uh-oh! Your embed is empty. Please edit your embed first then try viewing it again."))
 
     @app.command(name="edit_title", description="Edits the title of your about embed")
-    @app.describe(title="Enter the title here")
     @app.checks.cooldown(1, 10)
     @app.guild_only()
     async def edit_title(
-        self, interaction: Interaction, title: app.Range[str, None, 256]
+        self, interaction: Interaction
     ) -> None:
         """A command which allows users to edit the title of their about embed
 
@@ -117,31 +139,17 @@ class About(GroupCog, group_name="about"):
         ----------
         interaction : `discord.Interaction`
             Represents a Discord Interaction
-
-        title : `app.Range[str, None, 256]`
-            The title of the about embed. Can only be upto 256 characters max
         """
 
-        if await coll.find_one({"user_id": interaction.user.id}) is None:
-            await coll.insert_one({"user_id": interaction.user.id, "title": title})
-
-        else:
-            await coll.update_one(
-                {"user_id": interaction.user.id}, {"$set": {"title": title}}
-            )
-
-        await interaction.response.send_message(
-            format_as_success_msg("Title successfully updated!"), ephemeral=True
-        )
+        await interaction.response.send_modal(TitleModal())
 
     @app.command(
         name="edit_description", description="Edits the description of your about embed"
     )
-    @app.describe(description="Enter the description here")
     @app.checks.cooldown(1, 10)
     @app.guild_only()
     async def edit_description(
-        self, interaction: Interaction, description: app.Range[str, None, 4096]
+        self, interaction: Interaction
     ) -> None:
         """A command which allows users to edit the description of their about embed
 
@@ -149,24 +157,9 @@ class About(GroupCog, group_name="about"):
         ----------
         interaction : `discord.Interaction`
             Represents a Discord Interaction
-
-        description : `app.Range[str, None, 4096]`
-            The description of the about embed. Can only be upto 4096 characters max
         """
 
-        if await coll.find_one({"user_id": interaction.user.id}) is None:
-            await coll.insert_one(
-                {"user_id": interaction.user.id, "description": description}
-            )
-
-        else:
-            await coll.update_one(
-                {"user_id": interaction.user.id}, {"$set": {"description": description}}
-            )
-
-        await interaction.response.send_message(
-            format_as_success_msg("Description successfully updated!"), ephemeral=True
-        )
+        await interaction.response.send_modal(DescriptionModal())
 
     @app.command(name="edit_color", description="Edits the color of your about embed")
     @app.describe(
@@ -381,11 +374,10 @@ class About(GroupCog, group_name="about"):
     @app.command(
         name="edit_author_text", description="Edits the Author text of your about embed"
     )
-    @app.describe(author_text="Enter the author text here")
     @app.checks.cooldown(1, 10)
     @app.guild_only()
     async def edit_author_text(
-        self, interaction: Interaction, author_text: app.Range[str, None, 256]
+        self, interaction: Interaction
     ) -> None:
         """A command which allows users to edit the author text of their about embed
 
@@ -393,33 +385,17 @@ class About(GroupCog, group_name="about"):
         ----------
         interaction : `discord.Interaction`
             Represents a Discord Interaction
-
-        author_text : `app.Range[str, None, 256]`
-            The author text of the about embed. Can only be upto 256 characters max
         """
 
-        if await coll.find_one({"user_id": interaction.user.id}) is None:
-            await coll.insert_one(
-                {"user_id": interaction.user.id, "author_text": author_text}
-            )
-
-        else:
-            await coll.update_one(
-                {"user_id": interaction.user.id}, {"$set": {"author_text": author_text}}
-            )
-
-        await interaction.response.send_message(
-            format_as_success_msg("Author Text successfully updated!"), ephemeral=True
-        )
+        await interaction.response.send_modal(AuthorTextModal())
 
     @app.command(
         name="edit_footer_text", description="Edits the Footer text of your about embed"
     )
-    @app.describe(footer_text="Enter the footer text here")
     @app.checks.cooldown(1, 10)
     @app.guild_only()
     async def edit_footer_text(
-        self, interaction: Interaction, footer_text: app.Range[str, None, 2048]
+        self, interaction: Interaction
     ) -> None:
         """A command which allows users to edit the footer text of their about embed
 
@@ -427,23 +403,87 @@ class About(GroupCog, group_name="about"):
         ----------
         interaction : `discord.Interaction`
             Represents a Discord Interaction
+        """
 
-        footer_text : `app.Range[str, None, 2048]`
-            The footer text of the about embed. Can only be upto 2048 characters max
+        await interaction.response.send_modal(FooterTextModal())
+
+    @app.command(name="reset", description="Reset specific parts of your about embed!")
+    @app.describe(category="Select the category you want to reset")
+    @app.checks.cooldown(1, 10)
+    @app.guild_only()
+    async def reset(self, interaction: Interaction, category: Category) -> None:
+        """A command which allows users to reset a specific category of their about embed
+
+        Parameters
+        ----------
+        interaction : `discord.Interaction`
+            Represents a Discord Interaction
+
+        category : `Category`
+            The category to reset.
         """
 
         if await coll.find_one({"user_id": interaction.user.id}) is None:
-            await coll.insert_one(
-                {"user_id": interaction.user.id, "footer_text": footer_text}
+            await interaction.response.send_message(
+                format_as_error_msg(
+                    "You can't reset something which doesn't even exist dumbo!"
+                ),
+                ephemeral=True,
+            )
+            return
+
+        if category == "Title":
+            await coll.update_one(
+                {"user_id": interaction.user.id}, {"$unset": {"title": ""}}
+            )
+
+        elif category == "Description":
+            await coll.update_one(
+                {"user_id": interaction.user.id}, {"$unset": {"description": ""}}
+            )
+
+        elif category == "Color":
+            await coll.update_one(
+                {"user_id": interaction.user.id}, {"$unset": {"color": ""}}
+            )
+
+        elif category == "Image":
+            await coll.update_one(
+                {"user_id": interaction.user.id}, {"$unset": {"image": ""}}
+            )
+
+        elif category == "Thumbnail":
+            await coll.update_one(
+                {"user_id": interaction.user.id}, {"$unset": {"thumbnail": ""}}
+            )
+
+        elif category == "Author Text":
+            await coll.update_one(
+                {"user_id": interaction.user.id}, {"$unset": {"author_text": ""}}
+            )
+
+        elif category == "Author URL":
+            await coll.update_one(
+                {"user_id": interaction.user.id}, {"$unset": {"author_url": ""}}
+            )
+
+        elif category == "Author Icon":
+            await coll.update_one(
+                {"user_id": interaction.user.id}, {"$unset": {"author_icon": ""}}
+            )
+
+        elif category == "Footer Text":
+            await coll.update_one(
+                {"user_id": interaction.user.id}, {"$unset": {"footer_text": ""}}
             )
 
         else:
             await coll.update_one(
-                {"user_id": interaction.user.id}, {"$set": {"footer_text": footer_text}}
+                {"user_id": interaction.user.id}, {"$unset": {"footer_icon": ""}}
             )
 
         await interaction.response.send_message(
-            format_as_success_msg("Footer Text successfully updated!"), ephemeral=True
+            format_as_success_msg(f"{category} successfully removed!"), ephemeral=True
         )
 
 
