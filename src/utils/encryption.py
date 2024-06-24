@@ -23,7 +23,7 @@ def encrypt(message: str) -> str:
     `str`
         Encrypted version of the provided message.
     """
-    
+
     encrypted_message = fernet.encrypt(message.encode()).decode()
     return encrypted_message
 
@@ -41,7 +41,7 @@ def decrypt(encrypted_message: str) -> Optional[str]:
     `Optional[str]`
         Returns the decrypted message if the decryption is successful. Else, `None`.
     """
-    
+
     try:
         decrypted_message = fernet.decrypt(encrypted_message)
     except InvalidToken:

@@ -21,6 +21,7 @@ config_data = load_config()
 if not os.path.exists("logs"):
     os.mkdir("logs")
 
+
 class EventsFilter(logging.Filter):
     def filter(self, record):
         return record.levelno < logging.ERROR

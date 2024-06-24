@@ -17,8 +17,10 @@ logger = logging.getLogger("snapbot")
 class Define(Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
-        
-    async def cog_app_command_error(self, interaction: Interaction, error: app.AppCommandError) -> None:
+
+    async def cog_app_command_error(
+        self, interaction: Interaction, error: app.AppCommandError
+    ) -> None:
         logger.error(error)
         await exception_manager(interaction, error)
 
@@ -31,10 +33,10 @@ class Define(Cog):
         ----------
         interaction : `discord.Interaction`
             Represents a Discord Interaction
-            
+
         word : `str`
             The word which was queried in the Urban Dictionary.
-            
+
         data_list : `List[dict]`
             The data fetched from the Urban dictionary.
 
@@ -44,11 +46,10 @@ class Define(Cog):
         """
 
         for data in data_list:
-            
             definition: str = data["definition"]
             example: str = data["example"]
             author: str = data["author"]
-            
+
             embed = (
                 Embed(
                     description=f"**{word}**: {definition}\n\n**Example**: {example}",
@@ -78,20 +79,23 @@ class Define(Cog):
         ----------
         interaction : `discord.Interaction`
             Represents a Discord Interaction.
-            
+
         word : `str`
             The word provided by the user which will be searched in the Urban Dictionary.
         """
-        
+
         # URL for making http request to Urban Dictionary
         url = f"https://api.urbandictionary.com/v0/define?term={word}"
-        
+
         # Get the response using the URL and run requirement checks like the status code or if the response is empty
         response = requests.get(url)
 
         if response.status_code != 200:
             await interaction.response.send_message(
-                format_as_error_msg("Urban Dictionary API is down! Please try again later."), ephemeral=True
+                format_as_error_msg(
+                    "Urban Dictionary API is down! Please try again later."
+                ),
+                ephemeral=True,
             )
             return
 
@@ -99,24 +103,27 @@ class Define(Cog):
 
         if not response_in_json["list"]:
             await interaction.response.send_message(
-                format_as_error_msg(f"No definitions found for the word: **{word}**"), ephemeral=True
+                format_as_error_msg(f"No definitions found for the word: **{word}**"),
+                ephemeral=True,
             )
             return
 
         await interaction.response.defer()
-        
+
         # Get the data list from the response
         data: List[dict] = response_in_json["list"]
-        
+
         embeds: list[discord.Embed] = []
-        
+
         # Adding all the embeds generated from the function to the embeds list defined earlier
-        for embed in self.generate_definition_embeds(interaction, word=word, data_list=data):
+        for embed in self.generate_definition_embeds(
+            interaction, word=word, data_list=data
+        ):
             embeds.append(embed)
-        
+
         # Create a view menu of type Embed
         view_menu = ViewMenu(interaction, menu_type=ViewMenu.TypeEmbed)
-        
+
         # Defining buttons and select for the view menu
         next_button = ViewButton(
             style=ButtonStyle.secondary,
@@ -134,26 +141,28 @@ class Define(Cog):
             style=ButtonStyle.secondary,
             label="Go to First",
             custom_id=ViewButton.ID_GO_TO_FIRST_PAGE,
-            emoji="⏮️"
+            emoji="⏮️",
         )
         go_to_last_button = ViewButton(
             style=ButtonStyle.secondary,
             label="Go to Last",
             custom_id=ViewButton.ID_GO_TO_LAST_PAGE,
-            emoji="⏭️"
+            emoji="⏭️",
         )
         go_to = ViewSelect.GoTo(title="Navigate to page...", page_numbers=...)
-        
+
         # Add embeds list as pages to the view menu
         view_menu.add_pages(embeds)
-        
+
         # Adding buttons and select to the view menu
-        view_menu.add_buttons([go_to_first_button, previous_button, next_button, go_to_last_button])
+        view_menu.add_buttons(
+            [go_to_first_button, previous_button, next_button, go_to_last_button]
+        )
         view_menu.add_go_to_select(go_to)
-        
+
         # Starting the view menu
         await view_menu.start()
-        
+
 
 async def setup(bot: Bot) -> None:
     await bot.add_cog(Define(bot))

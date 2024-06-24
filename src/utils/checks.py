@@ -23,11 +23,11 @@ def is_valid_attachment_url():
 
 def is_owner():
     """A check which returns `True` if the command invoker is the bot owner. Else, `False`."""
-    
+
     def predicate(interaction: Interaction) -> bool | NotOwner:
         if interaction.user.id == config_data["bot"]["owner"]:
             return True
-        
+
         return False
-    
+
     return app.check(predicate)

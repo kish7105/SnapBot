@@ -11,10 +11,10 @@ def get_channel(interaction: Interaction, /, *, channel: str) -> Optional[TextCh
 
     Parameters
     ----------
-    
+
     interaction: `discord.Interaction`
         Represents a Discord Interaction
-        
+
     channel : `str`
         The name of the text channel to be returned.
 
@@ -22,13 +22,15 @@ def get_channel(interaction: Interaction, /, *, channel: str) -> Optional[TextCh
     -------
     `Optional[TextChannel]`
     """
-    
+
     config_data = load_config()
     channels_data: Dict[str, int] = config_data["server_settings"]["channels"]
-    
+
     if channels_data.get(channel.lower()) is None:
         return None
-    
+
     else:
-        return discord.utils.find(lambda c: c.id == channels_data.get(channel.lower()), interaction.guild.channels)
-    
+        return discord.utils.find(
+            lambda c: c.id == channels_data.get(channel.lower()),
+            interaction.guild.channels,
+        )

@@ -15,8 +15,10 @@ logger = logging.getLogger("snapbot")
 class Avatar(Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
-        
-    async def cog_app_command_error(self, interaction: Interaction, error: app.AppCommandError) -> None:
+
+    async def cog_app_command_error(
+        self, interaction: Interaction, error: app.AppCommandError
+    ) -> None:
         logger.error(error)
         await exception_manager(interaction, error)
 
